@@ -1,0 +1,29 @@
+<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.SmtpServerDriver"
+        Name="SmtpServerDriver" Version="1.0.0">
+    <Layout>
+        <Category Name="Hidden Commands">
+            <Command Description="" DisplayName="Orchestration Save" Name="orchestration_save"/>
+            <Command Description="" DisplayName="Orchestration Restore" Name="orchestration_restore"/>
+        </Category>
+        <Category Name="Custom Mail">
+            <Command Description="Send custom mail" DisplayName="Send Mail"
+                     Name="send_mail" Tags="allow_unreserved">
+                <Parameters>
+                    <Parameter DefaultValue=" Cloudshell Mail Service"
+                               Description="Email Message Title"
+                               DisplayName="Message Title" Mandatory="True" Name="message_title" Type="String"/>
+                    <Parameter DefaultValue="Hello From Cloudshell"
+                               Description="Email Message Body"
+                               DisplayName="Message Body" Mandatory="True" Name="message_body" Type="String"/>
+                    <Parameter DefaultValue=""
+                               Description="Comma separated list of email recipients"
+                               DisplayName="Recipients" Mandatory="True" Name="recipients" Type="String"/>
+                </Parameters>
+            </Command>
+        </Category>
+        <Category Name="Test Mail">
+            <Command Description="" DisplayName="Send Test Mail" Name="send_test_mail" Tags="allow_unreserved">
+            </Command>
+        </Category>
+    </Layout>
+</Driver>

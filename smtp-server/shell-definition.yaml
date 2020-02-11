@@ -1,0 +1,101 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+metadata:
+  template_name: Smtp Server
+  template_author: Anonymous
+  template_version: 0.1.0
+  template_icon: shell-icon.png
+
+description: >
+  TOSCA based resource shell
+
+imports:
+  - cloudshell_standard: cloudshell_resource_standard_2_0_3.yaml
+
+node_types:
+
+  vendor.resource.Smtp Server:
+    derived_from: cloudshell.nodes.GenericResource
+    properties:
+      SMTP Port:
+        description: Port of smtp server (587, 25, 465)
+        type: string
+        default: 587
+        tags: [user_input, configuration, setting]
+      SMTP Auth Enabled:
+        type: boolean
+        default: true
+        tags: [user_input, configuration, setting]
+      SSL Enabled:
+        type: boolean
+        default: true
+        tags: [user_input, configuration, setting]
+      Proxy Enabled:
+        description: Boolean to determine SMTP flow if server is behind http proxy
+        type: boolean
+        default: false
+        tags: [user_input, configuration, setting]
+      Proxy Host:
+        description: IP of http proxy server
+        type: string
+        tags: [user_input, configuration, setting]
+      Proxy Port:
+        description: port of proxy server
+        type: integer
+        default: 8888
+        tags: [user_input, configuration, setting]
+    capabilities:
+      auto_discovery_capability:
+        type: cloudshell.capabilities.AutoDiscovery
+        properties:        
+          enable_auto_discovery:
+            type: boolean
+            default: true
+          auto_discovery_description:
+            type: string
+            default: Describe the auto discovery
+          inventory_description:
+            type: string
+            default: Describe the resource shell template
+          User:
+            description: smtp user
+            type: string
+            tags: [user_input, configuration, setting]
+          Password:
+            description: smtp password
+            type: string
+            tags: [user_input, configuration, setting]
+          SMTP Port:
+            description: Port of smtp server (587, 25, 465)
+            type: string
+            default: 587
+            tags: [user_input, configuration, setting]
+          SMTP Auth Enabled:
+            type: boolean
+            default: true
+            tags: [user_input, configuration, setting]
+          SSL Enabled:
+            type: boolean
+            default: true
+            tags: [user_input, configuration, setting]
+          Proxy Enabled:
+            description: Boolean to determine SMTP flow if server is behind http proxy
+            type: boolean
+            default: false
+            tags: [user_input, configuration, setting]
+          Proxy Host:
+            description: IP of http proxy server
+            type: string
+            tags: [user_input, configuration, setting]
+          Proxy Port:
+            description: port of proxy server
+            type: integer
+            default: 8888
+            tags: [user_input, configuration, setting]
+    artifacts:
+      icon:
+        file: mail_icon.png
+        type: tosca.artifacts.File
+      driver:
+        file: SmtpServerDriver.zip
+        type: tosca.artifacts.File

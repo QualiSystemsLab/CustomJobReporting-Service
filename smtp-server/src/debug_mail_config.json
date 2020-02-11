@@ -1,0 +1,16 @@
+{
+  "smtp_user": "nfuztc622ijtae5g@ethereal.email",
+  "smtp_pass": "yvGgagK5q6Rt7dfKhJ",
+  "smtp_address": "smtp.ethereal.email",
+  "smtp_port": 587,
+  "message_title": "test title",
+  "message_body": "hello this is the body",
+  "recipients_list": [
+    "natti.k@quali.com"
+  ],
+  "smtp_auth_enabled": true,
+  "ssl_enabled": true,
+  "proxy_enabled": false,
+  "proxy_host": "192.168.85.7",
+  "proxy_port": 8888
+}

@@ -1,0 +1,54 @@
+tosca_definitions_version: tosca_simple_yaml_1_0
+
+metadata:
+  template_name: Reporting Service
+  template_author: Anonymous
+  template_version: 0.1.0
+  template_icon: shell-icon.png
+
+description: >
+  TOSCA based service shell
+
+imports:
+  - cloudshell_standard: cloudshell_admin_only_custom_service_standard_1_0_0.yaml
+
+node_types:
+
+  vendor.resource.Reporting Service:
+    derived_from: cloudshell.nodes.AdminOnlyCustomService
+    properties:
+      Current Job Id:
+        description: current job running against this sandbox
+        type: string
+        tags: [user_input, configuration, setting]
+      SMTP Resource:
+        description: name of cloudshell smtp resource which will send the mail
+        default: admin smtp
+        type: string
+        tags: [user_input, configuration, setting]
+      CS Https:
+        description: current job running against this sandbox
+        type: boolean
+        default: false
+        tags: [user_input, configuration, setting]
+    #  User:
+    #    description: User with administrative privileges
+    #    type: string
+    #    tags: [user_input]
+    #  Password:
+    #    type: cloudshell.datatypes.Password
+    #    tags: [user_input]
+    #  Address:
+    #    description: Address for remote access
+    #    type: string
+    #    tags: [user_input]
+    #  Service Categories:
+    #    type: list
+    #    default: [My Category 1, My Category 2]    
+    artifacts:
+      icon:
+        file: shell-icon.png
+        type: tosca.artifacts.File
+      driver:
+        file: ReportingServiceDriver.zip
+        type: tosca.artifacts.File
