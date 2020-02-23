@@ -137,6 +137,8 @@ class SmtpServerDriver(ResourceDriverInterface):
         '''
         pass
 
+    # </editor-fold>
+
     def send_mail(self, context, message_title, message_body, recipients):
         """
         Gets smtp credentials from shell and passes into email helper
@@ -218,4 +220,3 @@ class SmtpServerDriver(ResourceDriverInterface):
                                   additionalInfo="SMTP server is online")
         return "test email sent to {}".format(smtp_user)
 
-    # </editor-fold>
