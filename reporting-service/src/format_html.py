@@ -55,7 +55,7 @@ def _get_test_data_html(sorted_test_data):
         outp += """
         <div>
             <p>Time Stamp: <em>{time_stamp}</em></p>
-            <p <pre>{data}</pre></p>
+            <p><pre>{data}</pre></p>
         </div>
         <br/>
         """.format(time_stamp=time_stamp,
