@@ -55,7 +55,7 @@ def _get_test_data_html(sorted_test_data):
         outp += """
         <div>
             <p>Time Stamp: <em>{time_stamp}</em></p>
-            <p>{data}</p>
+            <p <pre>{data}</pre></p>
         </div>
         <br/>
         """.format(time_stamp=time_stamp,
@@ -71,7 +71,7 @@ def _get_html_custom_test_data(sandbox_data, job_tests_list):
         test_data = [data for data in sandbox_data if test_id in data.Key]
         sorted_data = sorted(test_data, key=_get_ms_timestamp_from_key)
         if not sorted_data:
-            return
+            return outp
         outp += """
         <div style="background:lightgray;padding:1em;border-radius:5px">
             <h4>{test_path}</h4>
