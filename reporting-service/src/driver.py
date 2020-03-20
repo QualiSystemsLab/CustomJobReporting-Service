@@ -217,6 +217,7 @@ class ReportingServiceDriver(ResourceDriverInterface):
 
         # save sandbox data
         sb_data = []
-        sb_timestamp_data = SandboxDataKeyValue("{}_{}".format(test_id, ms_timestamp), test_data)
+        data_key = "{}_{}".format(test_id, ms_timestamp)
+        sb_timestamp_data = SandboxDataKeyValue(data_key, test_data)
         sb_data.append(sb_timestamp_data)
         api.SetSandboxData(res_id, sb_data)
