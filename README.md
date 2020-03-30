@@ -4,10 +4,10 @@ This solution depends on sandbox data (Cloudshell 9.2)
 
 ### Purpose
 This solution creates a custom email report of jobs. Added data fields are:
-    - test inputs
-    - pass / fail status
-    - execution server used
-    - custom data aggregated at end of report
+ 1. test inputs
+ 2. pass / fail status
+ 3. execution server used
+ 4. custom data aggregated at end of report
 
 
 ### Solution Flow
