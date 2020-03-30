@@ -18,6 +18,9 @@
                     <Parameter DefaultValue=""
                                Description="Comma separated list of email recipients"
                                DisplayName="Recipients" Mandatory="True" Name="recipients" Type="String"/>
+                    <Parameter DefaultValue=""
+                               Description="Comma separated list of email recipients"
+                               DisplayName="CC Recipients" Mandatory="False" Name="cc_recipients" Type="String"/>
                 </Parameters>
             </Command>
         </Category>

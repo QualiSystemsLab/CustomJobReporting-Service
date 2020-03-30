@@ -3,7 +3,7 @@ import os
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadResource, \
     AutoLoadAttribute, AutoLoadDetails, CancellationContext
-# from data_model import *  # run 'shellfoundry generate' to generate data model classes
+from data_model import *  # run 'shellfoundry generate' to generate data model classes
 from helper_code.quali_api_wrapper import QualiAPISession
 import helper_code.shell_api_helpers as shell_api_help
 import helper_code.automation_api_helpers as auto_api_help
@@ -94,9 +94,18 @@ class ReportingServiceDriver(ResourceDriverInterface):
         api = shell_api_help.get_api_from_context(context)
         res_id = context.reservation.reservation_id
 
+        resource = ReportingService.create_from_context(context)
+        additional_recipients = resource.additional_recipients
+        cc_recipients = resource.cc_recipients
+
         quali_server = context.connectivity.server_address
         admin_token = context.connectivity.admin_auth_token
         sb_owner_mail = context.reservation.owner_email
+
+        if additional_recipients:
+            recipients = sb_owner_mail + "," + additional_recipients
+        else:
+            recipients = sb_owner_mail
 
         model = context.resource.model
         attrs = context.resource.attributes
@@ -111,7 +120,8 @@ class ReportingServiceDriver(ResourceDriverInterface):
 
         # validate that job id was added
         if not current_job_id:
-            self._send_error_report(context, custom_message="No Job Id Set On Reporting Service")
+            msg = "No Job Id Set On Reporting Service. Add set_job_id helper to 'finalize' in one test in the job"
+            self._send_error_report(context, custom_message=msg)
             return
             # raise Exception("Job Id not set to service. Can't get report info from Quali API")
 
@@ -136,14 +146,15 @@ class ReportingServiceDriver(ResourceDriverInterface):
                                           server_date_time=server_date_string,
                                           protocol=server_protocol,
                                           sb_data=sb_data)
-
         # sending mail
         job_name = job_details["Name"]
         mail_inputs = [
             InputNameValue("message_title", "Custom Job Report: '{}', Ended: {}".format(job_name,
                                                                                         server_date_string)),
             InputNameValue("message_body", email_body),
-            InputNameValue("recipients", sb_owner_mail)]
+            InputNameValue("recipients", recipients),
+            InputNameValue("cc_recipients", cc_recipients)
+        ]
         try:
             mail_response = api.ExecuteCommand(reservationId=res_id,
                                                targetName=smtp_resource,
@@ -172,7 +183,19 @@ class ReportingServiceDriver(ResourceDriverInterface):
         res_id = context.reservation.reservation_id
         environment_name = context.reservation.environment_name
 
+        resource = ReportingService.create_from_context(context)
+        additional_recipients = resource.additional_recipients
+        cc_recipients = resource.cc_recipients
+        error_report_all = True if resource.error_report_all == "True" else False
         sb_owner_mail = context.reservation.owner_email
+
+        if additional_recipients and error_report_all:
+            recipients = sb_owner_mail + "," + additional_recipients
+        else:
+            recipients = sb_owner_mail
+
+        if not error_report_all:
+            cc_recipients = ""
 
         model = context.resource.model
         attrs = context.resource.attributes
@@ -188,7 +211,9 @@ class ReportingServiceDriver(ResourceDriverInterface):
         mail_inputs = [
             InputNameValue("message_title", "Job Report Issue - Environment '{}'".format(environment_name)),
             InputNameValue("message_body", email_body),
-            InputNameValue("recipients", sb_owner_mail)]
+            InputNameValue("recipients", recipients),
+            InputNameValue("cc_recipients", cc_recipients)
+        ]
         try:
             mail_response = api.ExecuteCommand(reservationId=res_id,
                                                targetName=smtp_resource,

@@ -5,7 +5,8 @@ from email.mime.text import MIMEText
 
 
 def send_email(smtp_user, smtp_pass, smtp_address, smtp_port, message_title, message_body, recipients_list,
-               smtp_auth_enabled=True, ssl_enabled=True, proxy_enabled=False, proxy_host="", proxy_port="", ):
+               cc_recipients=None, smtp_auth_enabled=True, ssl_enabled=True,
+               proxy_enabled=False, proxy_host="", proxy_port=""):
     """
     send email to list of users. First member is primary, the rest in CC
     :param str smtp_user:
@@ -15,6 +16,7 @@ def send_email(smtp_user, smtp_pass, smtp_address, smtp_port, message_title, mes
     :param str message_title:
     :param str message_body:
     :param list recipients_list:
+    :param list cc_recipients:
     :param bool smtp_auth_enabled:
     :param bool ssl_enabled:
     :param bool proxy_enabled:
@@ -27,9 +29,20 @@ def send_email(smtp_user, smtp_pass, smtp_address, smtp_port, message_title, mes
     msg = MIMEMultipart('alternative')
     msg['Subject'] = message_title
     msg['From'] = smtp_user
-    msg['To'] = recipients_list[0]
-    if len(recipients_list) > 1:
-        msg['Cc'] = ', '.join(recipients_list[1:])
+
+    if not recipients_list:
+        raise Exception("Primary recipients list is empty: {}".format(recipients_list))
+
+    if len(recipients_list) == 1:
+        msg['To'] = recipients_list[0]
+    elif len(recipients_list) > 1:
+        msg['To'] = ', '.join(recipients_list)
+
+    if cc_recipients:
+        if len(recipients_list) == 1:
+            msg['Cc'] = cc_recipients[0]
+        elif len(cc_recipients) > 1:
+            msg['Cc'] = ', '.join(cc_recipients)
 
     # Create the body of the message (a plain-text and an HTML version).
 

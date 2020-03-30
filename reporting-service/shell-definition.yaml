@@ -20,17 +20,32 @@ node_types:
       Current Job Id:
         description: current job running against this sandbox
         type: string
-        tags: [user_input, configuration, setting]
+        tags: [configuration, setting]
       SMTP Resource:
         description: name of cloudshell smtp resource which will send the mail
         default: admin smtp
         type: string
         tags: [user_input, configuration, setting]
       CS Https:
-        description: current job running against this sandbox
+        description: is cloudshell portal configured with ssl? this is for sending out correct links to sandbox
         type: boolean
         default: false
         tags: [user_input, configuration, setting]
+      Additional Recipients:
+        description: comma separated list of email addresses, appended to sandbox owner mail
+        type: string
+        tags: [user_input, configuration, setting]
+      Cc Recipients:
+        description: comma separated list of email addresses to add to Cc
+        type: string
+        tags: [user_input, configuration, setting]
+      Error Report All:
+        description: to send email report to everybody, or just sandbox owner
+        type: boolean
+        default: true
+        tags: [user_input, configuration, setting]
+
+
     #  User:
     #    description: User with administrative privileges
     #    type: string

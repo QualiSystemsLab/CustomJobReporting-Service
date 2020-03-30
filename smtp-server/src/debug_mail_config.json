@@ -6,7 +6,10 @@
   "message_title": "test title",
   "message_body": "hello this is the body",
   "recipients_list": [
-    "natti.k@quali.com"
+    "natti.k@quali.com", "123@whatever.com", "asdf@asdf.com"
+  ],
+  "cc_list": [
+    "katzy687@gmail.com", "123@whatever.com", "asdf@asdf.com"
   ],
   "smtp_auth_enabled": true,
   "ssl_enabled": true,

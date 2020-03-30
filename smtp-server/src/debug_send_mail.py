@@ -12,6 +12,7 @@ try:
                message_title=data["message_title"],
                message_body=data["message_body"],
                recipients_list=data["recipients_list"],
+               cc_list=data["cc_list"],
                proxy_enabled=data["proxy_enabled"],
                proxy_host=data["proxy_host"],
                proxy_port=data["proxy_port"],
