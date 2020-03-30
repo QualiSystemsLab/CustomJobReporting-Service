@@ -23,7 +23,16 @@ def first_module_flow(sandbox, components=None):
     warn_print(api, res_id, "starting teardown, sending job report...")
 
     # send mail report
-    api.ExecuteCommand(reservationId=res_id,
-                       targetName=REPORTING_SERVICE,
-                       targetType="Service",
-                       commandName="send_report_mail")
+    try:
+        api.ExecuteCommand(reservationId=res_id,
+                           targetName=REPORTING_SERVICE,
+                           targetType="Service",
+                           commandName="send_report_mail")
+    except Exception as e:
+        msg = "Issue with reporting service: {}".format(str(e))
+        err_print(api, res_id, msg)
+        raise
+    else:
+        warn_print(api, res_id, "Email Job Report Sent")
+
+

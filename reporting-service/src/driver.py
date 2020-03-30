@@ -122,16 +122,14 @@ class ReportingServiceDriver(ResourceDriverInterface):
         if not current_job_id:
             msg = "No Job Id Set On Reporting Service. Add set_job_id helper to 'finalize' in one test in the job"
             self._send_error_report(context, custom_message=msg)
-            return
-            # raise Exception("Job Id not set to service. Can't get report info from Quali API")
+            raise Exception("Job Id not set to service. Can't get job report info from Quali API")
 
         try:
             quali_api = QualiAPISession(host=quali_server, token_id=admin_token)
         except Exception as e:
             err_print(api, res_id, "=== issue with quali api session ===")
             self._send_error_report(context, "Issue establishing Quali API Session: {}".format(str(e)))
-            return
-            # raise
+            raise
         else:
             job_details = quali_api.get_job_details(current_job_id)
 
@@ -168,7 +166,7 @@ class ReportingServiceDriver(ResourceDriverInterface):
             api.SetReservationLiveStatus(reservationId=res_id,
                                          liveStatusName="Error",
                                          additionalInfo=info)
-            # raise
+            raise
         else:
             warn_print(api, res_id, mail_response.Output)
 
