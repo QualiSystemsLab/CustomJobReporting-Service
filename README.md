@@ -9,4 +9,4 @@ OPTIONAL:
 1. Testshell test "Set_data" present to add additional custom data output to report.
 
 Screenshots of sample testshell tests:
-![set test id](https://raw.githubusercontent.com/katzy687/Customer-VF-Bracknell-CustomJobReporting/master/images/set_job_id.png)
+![set test id](https://raw.githubusercontent.com/QualiSystemsLab/Customer-VF-Bracknell-CustomJobReporting/master/images/set_job_id.png)
