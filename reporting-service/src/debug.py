@@ -4,10 +4,10 @@ from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCom
     Connector, ReservationContextDetails, ResourceContextDetails
 import driver as mydriver
 
-LIVE_SANDBOX_ID = "bd97518d-85e6-4a25-a454-bb4258c40174"
+LIVE_SANDBOX_ID = "b2422aaa-ab7a-4794-ae02-06d7326859f4"
 SERVICE_NAME = "Reporting Service"
 
-server = "localhost"
+server = "qs-il-lt-nattik"
 
 attach_to_cloudshell_as(
     user='admin',

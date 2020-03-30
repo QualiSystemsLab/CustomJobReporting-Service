@@ -4,17 +4,36 @@ import json
 
 
 class QualiAPISession():
-    def __init__(self, host, username='', password='', domain='Global', timezone='UTC',
-                 datetimeformat='MM/dd/yyyy HH:mm', token_id='', port=9000):
+    def __init__(self, host, username='', password='', domain='Global', token_id='', port=9000,
+                 timezone='UTC', date_time_format='MM/dd/yyyy HH:mm'):
+        self.cs_host = host
+        self.username = username
+        self.password = password
+        self.domain = domain
+        self.token_id = token_id
+        self.cs_api_port = port
         self._api_base_url = "http://{0}:{1}/Api".format(host, port)
-        if token_id:
-            login_result = requests.put(self._api_base_url + "/Auth/Login", {"token": token_id, "domain": domain})
-        elif username and password:
-            login_result = requests.put(self._api_base_url + "/Auth/Login",
-                                        {"username": username, "password": password, "domain": domain})
+        self.req_session = requests.session()
+        self.set_auth_headers()
+
+    def set_auth_headers(self):
+        token_body = {"Token": self.token_id, "Domain": self.domain}
+        creds_body = {"Username": self.username, "Password": self.password, "Domain": self.domain}
+        login_headers = {"Content-Type": "application/json"}
+        if self.token_id:
+            login_result = requests.put(url=self._api_base_url + "/Auth/Login",
+                                        data=json.dumps(token_body),
+                                        headers=login_headers)
+        elif self.username and self.password:
+            login_result = requests.put(url=self._api_base_url + "/Auth/Login",
+                                        data=json.dumps(creds_body),
+                                        headers=login_headers)
         else:
-            raise ValueError("Must supply either username and password or token_id")
-        self._auth_code = "Basic {0}".format(login_result.content[1:-1])
+            raise ValueError("Must supply either username / password OR admin token")
+        auth_token = login_result.content[1:-1]
+        formatted_token = "Basic {}".format(auth_token)
+        auth_header = {"Authorization": formatted_token}
+        self.req_session.headers.update(auth_header)
 
     def import_package(self, package_filepath):
         """
@@ -23,9 +42,8 @@ class QualiAPISession():
         """
         with open(package_filepath, "rb") as package_file:
             package_content = package_file.read()
-            import_result = requests.post(self._api_base_url + "/Package/ImportPackage",
-                                          headers={"Authorization": self._auth_code},
-                                          files={'QualiPackage': package_content})
+            import_result = self.req_session.post(url=self._api_base_url + "/Package/ImportPackage",
+                                                  files={'QualiPackage': package_content})
 
     def export_package(self, blueprint_full_names, target_filename):
         """
@@ -33,9 +51,9 @@ class QualiAPISession():
         :param blueprint_full_names: list of full Blueprint names to export (e.g. ["Folder1/Blueprint1", "Folder2/Blueprint2"])
         :param target_filename: name of the package file to create with the exported blueprints
         """
-        export_result = requests.post(self._api_base_url + "/Package/ExportPackage",
-                                      {"TopologyNames": blueprint_full_names},
-                                      headers={"Authorization": self._auth_code})
+        body = {"TopologyNames": blueprint_full_names}
+        export_result = self.req_session.post(url=self._api_base_url + "/Package/ExportPackage",
+                                              data=json.dumps(body))
         with open(target_filename, "wb") as target_file:
             target_file.write(export_result.content)
 
@@ -46,9 +64,9 @@ class QualiAPISession():
         :param filename: File to get from the reservation
         :param target_filename: target file name to save the file as
         """
-        get_result = requests.post(self._api_base_url + "/Package/GetReservationAttachment",
-                                   {"ReservationId": sandbox_id, "FileName": filename},
-                                   headers={"Authorization": self._auth_code})
+        body = {"ReservationId": sandbox_id, "FileName": filename}
+        get_result = self.req_session.post(url=self._api_base_url + "/Package/GetReservationAttachment",
+                                           data=json.dumps(body))
         if 200 <= get_result.status_code < 300:
             if save_path.endswith(os.path.sep):
                 with open(r"{0}{1}".format(save_path, filename), "wb") as target_file:
@@ -67,9 +85,8 @@ class QualiAPISession():
         :return: List of files attached to the Sandbox
         :rtype: list[str]
         """
-        get_result = requests.get(
-            self._api_base_url + "/Package/GetReservationAttachmentsDetails/{0}".format(sandbox_id),
-            headers={"Authorization": self._auth_code})
+        ep_url = "/Package/GetReservationAttachmentsDetails/{0}".format(sandbox_id)
+        get_result = self.req_session.get(url=self._api_base_url + ep_url)
         if 200 <= get_result.status_code < 300:
             result_json = json.loads(get_result.content)
             if result_json["Success"]:
@@ -85,9 +102,9 @@ class QualiAPISession():
         :param sandbox_id: The ID of the Sandbox to delete the file from
         :param filename: the exact name of the file to delete
         """
-        delete_result = requests.post(self._api_base_url + "/Package/DeleteFileFromReservation",
-                                      data={"reservationId": sandbox_id, "FileName": filename},
-                                      headers={"Authorization": self._auth_code})
+        body = {"reservationId": sandbox_id, "FileName": filename}
+        delete_result = self.req_session.post(self._api_base_url + "/Package/DeleteFileFromReservation",
+                                              data=json.dumps(body))
 
     def attach_file_to_reservation(self, sandbox_id, filename, target_filename, overwrite_if_exists):
         """
@@ -98,12 +115,15 @@ class QualiAPISession():
         :return:
         """
         overwrite_str = "True" if overwrite_if_exists else "False"
+        body = {
+            "reservationId": sandbox_id,
+            "saveFileAs": target_filename,
+            "overwriteIfExists": overwrite_if_exists
+        }
         with open(filename, "rb") as attached_file:
-            attach_file_result = requests.post(self._api_base_url + "/Package/AttachFileToReservation",
-                                               headers={"Authorization": self._auth_code},
-                                               data={"reservationId": sandbox_id, "saveFileAs": target_filename,
-                                                     "overwriteIfExists": overwrite_if_exists},
-                                               files={'QualiPackage': attached_file})
+            attach_file_result = self.req_session.post(url=self._api_base_url + "/Package/AttachFileToReservation",
+                                                       data=json.dumps(body),
+                                                       files={'QualiPackage': attached_file})
 
     def add_shell(self, shell_filename):
         """
@@ -112,8 +132,8 @@ class QualiAPISession():
         :return:
         """
         with open(shell_filename, "rb") as shell_file:
-            return requests.post(self._api_base_url + "/Shells", files={"Shell": shell_file},
-                                 headers={"Authorization": self._auth_code})
+            return self.req_session.post(url=self._api_base_url + "/Shells",
+                                         files={"Shell": shell_file})
 
     def update_shell(self, shell_name, shell_filename):
         """
@@ -123,8 +143,8 @@ class QualiAPISession():
         :return:
         """
         with open(shell_filename, "rb") as shell_file:
-            return requests.put(self._api_base_url + "/Shells/" + shell_name, files={"Shell": shell_file},
-                                headers={"Authorization": self._auth_code})
+            return self.req_session.put(url=self._api_base_url + "/Shells/" + shell_name,
+                                        files={"Shell": shell_file})
 
     def get_installed_standards(self):
         """
@@ -132,8 +152,7 @@ class QualiAPISession():
         :return: The list of installed Shell Standards
         :rtype: json
         """
-        get_standards_result = requests.get(self._api_base_url + "/Standards",
-                                            headers={"Authorization": self._auth_code})
+        get_standards_result = self.req_session.get(url=self._api_base_url + "/Standards")
         if 200 <= get_standards_result.status_code < 300:
             return get_standards_result.json()
         else:
@@ -147,10 +166,9 @@ class QualiAPISession():
         :rtype: json
         """
         end_point = self._api_base_url + "/Scheduling/Queue"
-        enqueue_job_result = requests.post(url=end_point,
-                                           headers={"Authorization": self._auth_code,
-                                                    "Content-Type": "application/json"},
-                                           data=json.dumps(job_data))
+        enqueue_job_result = self.req_session.post(url=end_point,
+                                                   headers={"Content-Type": "application/json"},
+                                                   data=json.dumps(job_data))
         if 200 <= enqueue_job_result.status_code < 300:
             return enqueue_job_result.json()
         else:
@@ -162,34 +180,31 @@ class QualiAPISession():
         :return: The list of installed Shell Standards
         :rtype: json
         """
-        enqueue_suite_result = requests.post(self._api_base_url + "/Scheduling/Suites",
-                                             headers={"Authorization": self._auth_code,
-                                                      "Content-Type": "application/json"},
-                                             data=json.dumps(suite_data))
+        enqueue_suite_result = self.req_session.post(self._api_base_url + "/Scheduling/Suites",
+                                                     headers={"Content-Type": "application/json"},
+                                                     data=json.dumps(suite_data))
         if 200 <= enqueue_suite_result.status_code < 300:
             return enqueue_suite_result.json()
         else:
             return enqueue_suite_result.content
 
     def get_suite_details(self, suite_id):
-        get_details_result = requests.get(self._api_base_url + "/Scheduling/Suites/{}".format(suite_id),
-                                          headers={"Authorization": self._auth_code})
+        get_details_result = self.req_session.get(url=self._api_base_url + "/Scheduling/Suites/{}".format(suite_id))
         if 200 <= get_details_result.status_code < 300:
             return get_details_result.json()
         else:
             return get_details_result.content
 
     def get_job_details(self, job_id):
-        get_details_result = requests.get(self._api_base_url + "/Scheduling/Jobs/{}".format(job_id),
-                                          headers={"Authorization": self._auth_code})
+        get_details_result = self.req_session.get(url=self._api_base_url + "/Scheduling/Jobs/{}".format(job_id))
         if 200 <= get_details_result.status_code < 300:
             return get_details_result.json()
         else:
-            raise Exception("Issue with job details api call: {}".format(get_details_result.content))
+            raise Exception("Issue with job details api call. Status {}: {}".format(str(get_details_result.status_code),
+                                                                                    get_details_result.content))
 
     def get_available_suites(self):
-        get_details_result = requests.get(self._api_base_url + "/Scheduling/SuiteTemplates",
-                                          headers={"Authorization": self._auth_code})
+        get_details_result = self.req_session.get(url=self._api_base_url + "/Scheduling/SuiteTemplates")
         if 200 <= get_details_result.status_code < 300:
             return get_details_result.json()
         else:
@@ -197,9 +212,15 @@ class QualiAPISession():
 
     def get_running_jobs(self):
         url = self._api_base_url + "/Scheduling/Executions"
-        running_jobs_res = requests.get(url, headers={"Authorization": self._auth_code})
+        running_jobs_res = self.req_session.get(url)
         if 200 <= running_jobs_res.status_code < 300:
             jobs = running_jobs_res.json()
             return jobs
         else:
             raise Exception("Issue with running jobs api call: {}".format(running_jobs_res.content))
+
+
+if __name__ == "__main__":
+    api = QualiAPISession(host="qs-il-lt-nattik", username="admin", password="admin")
+    results = api.get_job_details(job_id="b8ac0f39-1d52-4437-b5e3-bcf8aecc65cf")
+    pass

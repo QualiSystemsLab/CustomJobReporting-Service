@@ -20,7 +20,7 @@ node_types:
       Current Job Id:
         description: current job running against this sandbox
         type: string
-        tags: [configuration, setting]
+        tags: [user_input, configuration, setting]
       SMTP Resource:
         description: name of cloudshell smtp resource which will send the mail
         default: admin smtp

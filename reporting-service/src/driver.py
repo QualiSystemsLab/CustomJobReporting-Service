@@ -120,18 +120,28 @@ class ReportingServiceDriver(ResourceDriverInterface):
 
         # validate that job id was added
         if not current_job_id:
-            msg = "No Job Id Set On Reporting Service. Add set_job_id helper to 'finalize' in one test in the job"
+            msg = "No Job Id Set On Reporting Service. Add set_job_id helper to 'finalize' in one test in the job."
             self._send_error_report(context, custom_message=msg)
-            raise Exception("Job Id not set to service. Can't get job report info from Quali API")
+            raise Exception("Job Id not set to service. Can't get job report info from Quali API.")
 
+        warn_print(api, res_id, "current token id: {}".format(admin_token))
+        warn_print(api, res_id, "quali server: {}".format(quali_server))
         try:
             quali_api = QualiAPISession(host=quali_server, token_id=admin_token)
+
         except Exception as e:
-            err_print(api, res_id, "=== issue with quali api session ===")
-            self._send_error_report(context, "Issue establishing Quali API Session: {}".format(str(e)))
+            err_msg = "Issue establishing Quali API Session: {}".format(str(e))
+            err_print(api, res_id, err_msg)
+            self._send_error_report(context, err_msg)
             raise
-        else:
+
+        try:
             job_details = quali_api.get_job_details(current_job_id)
+        except Exception as e:
+            err_msg = "Could not get job details: {}".format(str(e))
+            err_print(api, res_id, err_msg)
+            self._send_error_report(context, err_msg)
+            raise
 
         current_dir = os.path.abspath(os.path.dirname(__file__))
         template_path = os.path.join(current_dir, EMAIL_TEMPLATE)
