@@ -139,7 +139,7 @@ class SmtpServerDriver(ResourceDriverInterface):
 
     # </editor-fold>
 
-    def send_mail(self, context, message_title, message_body, recipients, cc_recipients):
+    def send_mail(self, context, message_title, message_body, recipients, cc_recipients=""):
         """
         Gets smtp credentials from shell and passes into email helper
         :param ResourceCommandContext context:

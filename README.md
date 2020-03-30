@@ -11,10 +11,10 @@ This solution creates a custom email report of jobs. Added data fields are:
 
 
 ### Solution Flow
-Testshell test sets job id onto service. 
-During teardown this job id is used to get job data from quali api and populate a custom report.
-The report is then mailed to users. 
-Additionally tests in job can store custom data in sandbox data store which will also be added to report.
+-   Testshell test sets job id onto service. 
+-   During teardown this job id is used to get job data from quali api and populate a custom report.
+-   The report is then mailed to users. 
+-   Additionally tests in job can store custom data in sandbox data store which will also be added to report.
 
 ### Solution Components
 1. Testshell test "set_job_id" must be in finalize of first test in job
@@ -24,8 +24,8 @@ Additionally tests in job can store custom data in sandbox data store which will
 
 ### Attached TS Helpers
 The testshell helper tests are in the ts-tests folder along with screenshots of implementation. 
-    - NOTE: the attached TS tests were created in 9.3 patch 5. Can NOT be migrated to older version
-    - for older version, refer to screenshots and recreate tests
+-   NOTE: the attached TS tests were created in 9.3 patch 5. Can NOT be migrated to older version
+-   for older version, refer to screenshots and recreate tests
 
 ### TS Helpers Overview
 1. set_job_id - uses testshell api SetServiceAttribute method to executionDetails.jobId onto service

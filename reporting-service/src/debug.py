@@ -3,8 +3,9 @@ import cloudshell.helpers.scripts.cloudshell_scripts_helpers as sh
 from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, ConnectivityContext, \
     Connector, ReservationContextDetails, ResourceContextDetails
 import driver as mydriver
+from helper_code.quali_api_wrapper import QualiAPISession
 
-LIVE_SANDBOX_ID = "b2422aaa-ab7a-4794-ae02-06d7326859f4"
+LIVE_SANDBOX_ID = "37cd73b7-bd12-4ea3-84b4-728fd2dc4e8f"
 SERVICE_NAME = "Reporting Service"
 
 server = "qs-il-lt-nattik"

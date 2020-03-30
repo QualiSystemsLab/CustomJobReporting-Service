@@ -39,7 +39,7 @@ def send_email(smtp_user, smtp_pass, smtp_address, smtp_port, message_title, mes
         msg['To'] = ', '.join(recipients_list)
 
     if cc_recipients:
-        if len(recipients_list) == 1:
+        if len(cc_recipients) == 1:
             msg['Cc'] = cc_recipients[0]
         elif len(cc_recipients) > 1:
             msg['Cc'] = ', '.join(cc_recipients)

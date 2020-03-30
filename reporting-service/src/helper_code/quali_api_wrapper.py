@@ -30,6 +30,10 @@ class QualiAPISession():
                                         headers=login_headers)
         else:
             raise ValueError("Must supply either username / password OR admin token")
+        if login_result.status_code not in [200, 202, 204]:
+            exc_msg = "Quali API login failure. Status Code: {}. Error: {}".format(str(login_result.status_code),
+                                                                                   login_result.content)
+            raise Exception(exc_msg)
         auth_token = login_result.content[1:-1]
         formatted_token = "Basic {}".format(auth_token)
         auth_header = {"Authorization": formatted_token}
@@ -221,6 +225,8 @@ class QualiAPISession():
 
 
 if __name__ == "__main__":
+    # api = QualiAPISession(host="localhost", token_id="AimU0Um8ukOCZm2LJFVoWg==")
     api = QualiAPISession(host="qs-il-lt-nattik", username="admin", password="admin")
+    jobs = api.get_running_jobs()
     results = api.get_job_details(job_id="b8ac0f39-1d52-4437-b5e3-bcf8aecc65cf")
     pass

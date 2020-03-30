@@ -124,11 +124,8 @@ class ReportingServiceDriver(ResourceDriverInterface):
             self._send_error_report(context, custom_message=msg)
             raise Exception("Job Id not set to service. Can't get job report info from Quali API.")
 
-        warn_print(api, res_id, "current token id: {}".format(admin_token))
-        warn_print(api, res_id, "quali server: {}".format(quali_server))
         try:
             quali_api = QualiAPISession(host=quali_server, token_id=admin_token)
-
         except Exception as e:
             err_msg = "Issue establishing Quali API Session: {}".format(str(e))
             err_print(api, res_id, err_msg)
@@ -232,7 +229,7 @@ class ReportingServiceDriver(ResourceDriverInterface):
             err_print(api, res_id, "=== Issue sending mail ===")
             raise
         else:
-            warn_print(api, res_id, "Error Report Mail sent to {}".format(sb_owner_mail))
+            warn_print(api, res_id, "Error Report Mail sent to {}".format(recipients))
 
     def set_test_data(self, context, test_id, test_data):
         """

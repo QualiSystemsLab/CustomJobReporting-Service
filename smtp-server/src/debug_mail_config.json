@@ -9,7 +9,7 @@
     "natti.k@quali.com", "123@whatever.com", "asdf@asdf.com"
   ],
   "cc_list": [
-    "katzy687@gmail.com", "123@whatever.com", "asdf@asdf.com"
+    "katzy687@gmail.com"
   ],
   "smtp_auth_enabled": true,
   "ssl_enabled": true,
