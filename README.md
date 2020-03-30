@@ -2,7 +2,21 @@
 
 This solution depends on sandbox data (Cloudshell 9.2)
 
-REQUIRED COMPONENTS:
+Purpose:
+This solution creates a custom email report of jobs. Added data fields are:
+    - test inputs
+    - pass / fail status
+    - execution server used
+    - custom data aggregated at end of report
+
+
+Solution Flow:
+Testshell test sets job id onto service. 
+During teardown this job id is used to get job data from quali api and populate a custom report.
+The report is then mailed to users. 
+Additionally tests in job can store custom data in sandbox data store which will also be added to report.
+
+COMPONENTS:
 1. Testshell test "set_job_id" must be in finalize of first test in job
 2. Reporting Service Shell must be present in blueprint
 3. Custom Teardown Script attached to trigger service. Collects job and sends email report.
