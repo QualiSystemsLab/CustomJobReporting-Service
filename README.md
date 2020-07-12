@@ -1,6 +1,6 @@
 # Customer-VF-Bracknell-CustomJobReporting
 
-This solution depends on "sandbox data" feature released in Cloudshell 9.2 to log custom data.
+This solution depends on "sandbox data" feature released in Cloudshell 9.2 to log custom data. \
 The custom table changes will still work pre 9.2.
 
 ### Purpose
@@ -19,7 +19,7 @@ This solution creates a custom email report of jobs. Added data fields are:
 
 ### Solution Flow
 -   Only one TS test in job needs to set job ID onto Reporting service. 
--   During teardown this job id is used to get job data vial REST call to quali api. This data is used to populate a custom report.
+-   During teardown this job id is used to get job data vial REST call to quali api. This data is used to populate a custom report template.
 -   The report is then mailed to users configured on service. (by default sandbox owner is mailed) 
 -   Additionally tests in job can store custom data in sandbox data store which will also be added to report.
 
@@ -36,7 +36,7 @@ The testshell helper tests are provided below:
 
 ### TS Helper Tests Overview
 1. set_job_id - uses testshell api SetServiceAttribute method to executionDetails.jobId onto service
-    -  this test is MANDATORY. Otherwise service will not be able to get job details from Quali API
+    - This test is MANDATORY. Otherwise service will not be able to get job details from Quali API
     - This test is required in only ONE test per job. I recommend to put it in the finalize of the first test as shown in the sample usage below.
 
 ##### === Set Job Id (Required) ===
