@@ -10,10 +10,10 @@ This solution creates a custom email report of jobs. Added data fields are:
  3. execution server used
  4. custom data aggregated at end of report
  
- Sample Email:
+##### === Sample Email ===
  ![Reporting Sample Mail](images/custom_report_sample.png?raw=true "Custom Report Sample")
  
- Custom Data Appended to bottom of test
+##### === Custom Data Appended to bottom of test ===
  ![Reporting Sample Mail](images/custom_data_sample.png?raw=true "Custom Data Sample")
 
 
@@ -39,7 +39,7 @@ The testshell helper tests are provided below:
     -  this test is MANDATORY. Otherwise service will not be able to get job details from Quali API
     - This test is required in only ONE test per job. I recommend to put it in the finalize of the first test as shown in the sample usage below.
 
-Set Job Id (Required):
+##### === Set Job Id (Required) ===
  ![Reporting Sample Mail](images/set_job_id.png?raw=true "Set Job Id")
  
 2. set_test_data - uses testshell api ExecuteCommand to trigger method on reporting service.
@@ -47,12 +47,12 @@ Set Job Id (Required):
     - Create variable "custom_test_data" and publish to input interface of helper
     - this helper relies on sandbox data, which is only available staring in 9.2
 
- Set Custom Data (Optional):
+ ##### === Set Custom Data (Optional) ===
  ![Reporting Sample Mail](images/set_custom_data.png?raw=true "Set Custom Data")
  
 3. sample_custom_data_pass - sample test showing the usage of the two helper scripts in a job's test
     - Note the use of set job id in Finalize
     - 3 instances of custom data logged to sandbox data
 
-Sample Usage:
+##### === Sample Usage ===
  ![Reporting Sample Mail](images/sample_usage.png?raw=true "Sample Usage")
