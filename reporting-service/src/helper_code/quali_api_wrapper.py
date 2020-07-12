@@ -110,12 +110,12 @@ class QualiAPISession():
         delete_result = self.req_session.post(self._api_base_url + "/Package/DeleteFileFromReservation",
                                               data=json.dumps(body))
 
-    def attach_file_to_reservation(self, sandbox_id, filename, target_filename, overwrite_if_exists):
+    def attach_file_to_reservation(self, sandbox_id, filename, target_filename, overwrite_if_exists=True):
         """
         Attach a file to a Sandbox
         :param filename: The full path of the file to attach
         :param target_filename: The name the file will be saved under in the Sandbox
-        :param overwrite_if_exists: if True, the file will overwrite an existing file of the same name if such a file exists
+        :param bool overwrite_if_exists: if True, the file will overwrite an existing file of the same name if such a file exists
         :return:
         """
         overwrite_str = "True" if overwrite_if_exists else "False"
@@ -125,9 +125,15 @@ class QualiAPISession():
             "overwriteIfExists": overwrite_if_exists
         }
         with open(filename, "rb") as attached_file:
-            attach_file_result = self.req_session.post(url=self._api_base_url + "/Package/AttachFileToReservation",
-                                                       data=json.dumps(body),
-                                                       files={'QualiPackage': attached_file})
+            response = self.req_session.post(url=self._api_base_url + "/Package/AttachFileToReservation",
+                                             data=json.dumps(body),
+                                             files={'QualiPackage': attached_file})
+            if 200 <= response.status_code < 300:
+                return response.json()
+            else:
+                raise Exception(
+                    "Issue with attach_to_reservation api call. Status code {}. {}".format(str(response.status_code),
+                                                                                           response.content))
 
     def add_shell(self, shell_filename):
         """
@@ -221,12 +227,18 @@ class QualiAPISession():
             jobs = running_jobs_res.json()
             return jobs
         else:
-            raise Exception("Issue with running jobs api call: {}".format(running_jobs_res.content))
+            raise Exception(
+                "Issue with get_running_jobs api call. Status code {}. {}".format(str(running_jobs_res.status_code),
+                                                                                  running_jobs_res.content))
 
 
 if __name__ == "__main__":
+    sandbox_id = ""
     # api = QualiAPISession(host="localhost", token_id="AimU0Um8ukOCZm2LJFVoWg==")
     api = QualiAPISession(host="qs-il-lt-nattik", username="admin", password="admin")
-    jobs = api.get_running_jobs()
+    jobs = api.attach_file_to_reservation(sandbox_id=sandbox_id,
+                                          filename="",
+                                          target_filename="",
+                                          overwrite_if_exists=True)
     results = api.get_job_details(job_id="b8ac0f39-1d52-4437-b5e3-bcf8aecc65cf")
     pass

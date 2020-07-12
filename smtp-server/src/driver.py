@@ -1,6 +1,6 @@
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
 from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadResource, \
-    AutoLoadAttribute, AutoLoadDetails, CancellationContext
+    AutoLoadAttribute, AutoLoadDetails, CancellationContext, AutoLoadCommandContext
 # from data_model import *  # run 'shellfoundry generate' to generate data model classes
 from email_helper import send_email
 import helper_code.shell_api_helpers as shell_api_help
@@ -44,7 +44,6 @@ class SmtpServerDriver(ResourceDriverInterface):
         # See below some example code demonstrating how to return the resource structure and attributes
         # In real life, this code will be preceded by SNMP/other calls to the resource details and will not be static
         # run 'shellfoundry generate' in order to create classes that represent your data model
-
         '''
         resource = SmtpServer.create_from_context(context)
         resource.vendor = 'specify the shell vendor'

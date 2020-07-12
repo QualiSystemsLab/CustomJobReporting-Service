@@ -5,7 +5,7 @@ from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCom
 import driver as mydriver
 from helper_code.quali_api_wrapper import QualiAPISession
 
-LIVE_SANDBOX_ID = "37cd73b7-bd12-4ea3-84b4-728fd2dc4e8f"
+LIVE_SANDBOX_ID = "33b70f5a-ed37-40de-87a0-b2125fa7245b"
 SERVICE_NAME = "Reporting Service"
 
 server = "qs-il-lt-nattik"
@@ -21,6 +21,8 @@ attach_to_cloudshell_as(
 
 session = sh.get_api_session()
 token = session.token_id
+quali_api = QualiAPISession(host="localhost", token_id=token)
+jobs = quali_api.get_running_jobs()
 
 reservation_context_details = sh.get_reservation_context_details()
 reservation_context = ReservationContextDetails(environment_name=reservation_context_details.environment_name,
