@@ -13,7 +13,7 @@ This solution creates a custom email report of jobs. Added data fields are:
 ##### === Sample Email ===
  ![Reporting Sample Mail](images/custom_report_sample.png?raw=true "Custom Report Sample")
  
-##### === Custom Data Appended to bottom of test ===
+##### === Custom Data Appended to bottom of Email Report ===
  ![Reporting Sample Mail](images/custom_data_sample.png?raw=true "Custom Data Sample")
 
 
