@@ -1,4 +1,4 @@
-# Customer-VF-Bracknell-CustomJobReporting
+# CustomJobReporting Service
 
 This solution depends on "sandbox data" feature released in Cloudshell 9.2 to log custom data. \
 The custom table changes will still work pre 9.2.
