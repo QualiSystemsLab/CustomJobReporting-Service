@@ -20,14 +20,15 @@ This solution creates a custom email report of jobs. Added data fields are:
 ### Solution Flow
 -   Only one TS test in job needs to set job ID onto Reporting service. 
 -   During teardown this job id is used to get job data vial REST call to quali api. This data is used to populate a custom report template.
--   The report is then mailed to users configured on service. (by default sandbox owner is mailed) 
+-   The report is then mailed to users configured on service. (by default sandbox owner is mailed) This solution uses the attached SMTP resource shell which must be inventoried and configured.
 -   Additionally tests in job can store custom data in sandbox data store which will also be added to report.
 
 ### Solution Components
-1. Testshell test "set_job_id" must be in finalize of first test in job
-2. Reporting Service Shell must be present in blueprint
+1. Testshell test "set_job_id" must be in finalize of first test in Cloudshell job
+2. Reporting Service Shell must imported and be present in blueprint
 3. Custom Teardown Script attached to trigger service. Collects job and sends email report.
 4. SMTP Server Shell loaded and configured in inventory (NOT required to be in blueprint)
+(attach all shells, script, and offline dependencies to [pypi server repository]() if working offline)
 
 ### Attached TS Helper Scripts Needed
 The testshell helper tests are provided below: 
@@ -56,3 +57,11 @@ The testshell helper tests are provided below:
 
 ##### === Sample Usage ===
  ![Reporting Sample Mail](images/sample_usage.png?raw=true "Sample Usage")
+ 
+ ### Reporting Service Attributes
+-	Additional Recipients – appended to sandbox owner in primary email list
+-	CC Recipients – added to mail in CC
+-	Error report all – Boolean switch to send error report to all users. On by default. If off, only sandbox owner gets error report if something goes wrong with report.
+-   SMTP Resource - Name of configured cloudshell SMTP resource which will send mail
+-   CS HTTPS - used when generating link to report in mail (if your portal is https set to true)
+-  Current Job ID - Do not touch this attribute. This is populated by automation. Left visible for debugging purposes

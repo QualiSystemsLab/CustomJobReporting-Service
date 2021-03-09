@@ -8,11 +8,15 @@ from helper_code.quali_api_wrapper import QualiAPISession
 import helper_code.shell_api_helpers as shell_api_help
 import helper_code.automation_api_helpers as auto_api_help
 from helper_code.sandbox_print_helpers import *
+from helper_code.sandbox_reporter import SandboxReporter
 import helper_code.time_helpers as time_help
 import json
 import time
 from cloudshell.api.cloudshell_api import AttributeNameValue, InputNameValue, SandboxDataKeyValue
 from format_html import format_html_template
+from cloudshell.logging.qs_logger import get_qs_logger
+from cloudshell.api.cloudshell_api import CloudShellAPISession
+
 
 EMAIL_TEMPLATE = "JobExecutionEnded.htm"
 
@@ -40,17 +44,33 @@ class ReportingServiceDriver(ResourceDriverInterface):
         """
         pass
 
+    @staticmethod
+    def _get_reporter(context, api):
+        """
+        :param ResourceCommandContext context:
+        :param CloudShellAPISession api:
+        :return:
+        """
+        res_id = context.reservation.reservation_id
+        service_name = context.resource.fullname
+        service_model = context.resource.model
+        logger = get_qs_logger(log_group=res_id, log_category=service_model, log_file_prefix=service_name)
+        reporter = SandboxReporter(api, res_id, logger)
+        return reporter
+
     def _get_current_job_id(self, context):
         """
-        get current job id and save as attribute on shell (not used right now in solution)
+        get current job id and save as attribute on shell
+        NOT BEING USED NOW (SETTING JOB ID ON SERVICE FROM TEST)
         :param ResourceCommandContext context:
         :return:
         """
         api = shell_api_help.get_api_from_context(context)
         res_id = context.reservation.reservation_id
+        reporter = self._get_reporter(context, api)
 
         blueprint_name = context.reservation.environment_name
-        sb_print(api, res_id, "blueprint name test - {}".format(blueprint_name))
+        reporter.info_out("blueprint name test - {}".format(blueprint_name))
 
         service_name = context.resource.name
         model = context.resource.model
@@ -93,8 +113,10 @@ class ReportingServiceDriver(ResourceDriverInterface):
         """
         api = shell_api_help.get_api_from_context(context)
         res_id = context.reservation.reservation_id
+        reporter = self._get_reporter(context, api)
 
         resource = ReportingService.create_from_context(context)
+        service_name = resource.name
         additional_recipients = resource.additional_recipients
         cc_recipients = resource.cc_recipients
 
@@ -121,6 +143,7 @@ class ReportingServiceDriver(ResourceDriverInterface):
         # validate that job id was added
         if not current_job_id:
             msg = "No Job Id Set On Reporting Service. Add set_job_id helper to 'finalize' in one test in the job."
+            reporter.err_out(msg)
             self._send_error_report(context, custom_message=msg)
             raise Exception("Job Id not set to service. Can't get job report info from Quali API.")
 
@@ -128,7 +151,7 @@ class ReportingServiceDriver(ResourceDriverInterface):
             quali_api = QualiAPISession(host=quali_server, token_id=admin_token)
         except Exception as e:
             err_msg = "Issue establishing Quali API Session: {}".format(str(e))
-            err_print(api, res_id, err_msg)
+            reporter.err_out(err_msg)
             self._send_error_report(context, err_msg)
             raise
 
@@ -136,7 +159,7 @@ class ReportingServiceDriver(ResourceDriverInterface):
             job_details = quali_api.get_job_details(current_job_id)
         except Exception as e:
             err_msg = "Could not get job details: {}".format(str(e))
-            err_print(api, res_id, err_msg)
+            reporter.err_out(err_msg)
             self._send_error_report(context, err_msg)
             raise
 
@@ -167,18 +190,15 @@ class ReportingServiceDriver(ResourceDriverInterface):
                                                commandName="send_mail",
                                                commandInputs=mail_inputs)
         except Exception as e:
-            err_print(api, res_id, "=== Issue sending mail ===")
-            err_print(api, res_id, str(e))
-            info = "Issue sending mail. Check '{}' SMTP Resource. Error: {}".format(smtp_resource, str(e))
-            api.SetReservationLiveStatus(reservationId=res_id,
+            err_msg = "Issue sending mail. Check '{}' SMTP Resource. Error: {}".format(smtp_resource, str(e))
+            api.SetResourceLiveStatus(resourceFullName=service_name,
                                          liveStatusName="Error",
-                                         additionalInfo=info)
-            raise
-        else:
-            warn_print(api, res_id, mail_response.Output)
+                                         additionalInfo=err_msg)
+            raise Exception(err_msg)
 
-    @staticmethod
-    def _send_error_report(context, custom_message=""):
+        reporter.warn_out(mail_response.Output)
+
+    def _send_error_report(self, context, custom_message=""):
         """
         get current job id and save as attribute on shell
         :param ResourceCommandContext context:
@@ -186,6 +206,8 @@ class ReportingServiceDriver(ResourceDriverInterface):
         """
         api = shell_api_help.get_api_from_context(context)
         res_id = context.reservation.reservation_id
+        reporter = self._get_reporter(context, api)
+
         environment_name = context.reservation.environment_name
 
         resource = ReportingService.create_from_context(context)
@@ -220,16 +242,16 @@ class ReportingServiceDriver(ResourceDriverInterface):
             InputNameValue("cc_recipients", cc_recipients)
         ]
         try:
-            mail_response = api.ExecuteCommand(reservationId=res_id,
+            api.ExecuteCommand(reservationId=res_id,
                                                targetName=smtp_resource,
                                                targetType="Resource",
                                                commandName="send_mail",
                                                commandInputs=mail_inputs)
         except Exception as e:
-            err_print(api, res_id, "=== Issue sending mail ===")
-            raise
-        else:
-            warn_print(api, res_id, "Error Report Mail sent to {}".format(recipients))
+            err_msg = "Issue sending error report mail: {}".format(str(e))
+            reporter.err_out(err_msg)
+            raise Exception(err_msg)
+        reporter.info_out("Error Report Mail sent to {}".format(recipients))
 
     def set_test_data(self, context, test_id, test_data):
         """
@@ -239,7 +261,7 @@ class ReportingServiceDriver(ResourceDriverInterface):
         """
         api = shell_api_help.get_api_from_context(context)
         res_id = context.reservation.reservation_id
-
+        reporter = self._get_reporter(context, api)
         model = context.resource.model
         attrs = context.resource.attributes
 
@@ -250,4 +272,10 @@ class ReportingServiceDriver(ResourceDriverInterface):
         data_key = "{}_{}".format(test_id, ms_timestamp)
         sb_timestamp_data = SandboxDataKeyValue(data_key, test_data)
         sb_data.append(sb_timestamp_data)
-        api.SetSandboxData(res_id, sb_data)
+        try:
+            api.SetSandboxData(res_id, sb_data)
+        except Exception as e:
+            msg = "issue setting test data with key '{}': {}".format(data_key)
+
+        reporter.info_out("Setting sandbox data for key: {}".format(data_key))
+        reporter.debug_out("=== Setting sandbox data ===\n{} - {}".format(data_key, test_data))

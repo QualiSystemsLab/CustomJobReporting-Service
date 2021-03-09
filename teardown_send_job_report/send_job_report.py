@@ -1,17 +1,12 @@
 from cloudshell.workflow.orchestration.sandbox import Sandbox
 from helper_code.sandbox_print_helpers import *
-import helper_code.automation_api_helpers as api_help
-from helper_code.quali_api_wrapper import QualiAPISession
-import cloudshell.helpers.scripts.cloudshell_scripts_helpers as script_help
-import json
-import time
-
+from helper_code.sandbox_reporter import SandboxReporter
 
 REPORTING_SERVICE = "Reporting Service"
 
 
 # ========== Primary Function ==========
-def first_module_flow(sandbox, components=None):
+def send_job_report(sandbox, components=None):
     """
     Functions passed into orchestration flow MUST have (sandbox, components) signature
     :param Sandbox sandbox:
@@ -20,7 +15,10 @@ def first_module_flow(sandbox, components=None):
     """
     api = sandbox.automation_api
     res_id = sandbox.id
-    warn_print(api, res_id, "starting teardown, sending job report...")
+    logger = sandbox.logger
+    reporter = SandboxReporter(api, res_id, logger)
+    reporter.warn_out("starting teardown, sending job report...")
+
 
     # send mail report
     try:
@@ -31,8 +29,12 @@ def first_module_flow(sandbox, components=None):
     except Exception as e:
         msg = "Issue with reporting service: {}".format(str(e))
         err_print(api, res_id, msg)
-        raise
-    else:
-        warn_print(api, res_id, "Email Job Report Sent")
+        reporter.err_out(msg)
+        api.SetReservationLiveStatus(reservationId=res_id,
+                                     liveStatusName="Error",
+                                     additionalInfo=msg)
+        raise Exception(msg)
+
+    reporter.warn_out("Email Job Report Sent")
 
 
