@@ -1,4 +1,4 @@
-# Customer-VF-Bracknell-CustomJobReporting
+# CustomJobReporting Service
 
 This solution depends on "sandbox data" feature released in Cloudshell 9.2 to log custom data. \
 The custom table changes will still work pre 9.2.
@@ -65,3 +65,5 @@ The testshell helper tests are provided below:
 -   SMTP Resource - Name of configured cloudshell SMTP resource which will send mail
 -   CS HTTPS - used when generating link to report in mail (if your portal is https set to true)
 -  Current Job ID - Do not touch this attribute. This is populated by automation. Left visible for debugging purposes
+
+
