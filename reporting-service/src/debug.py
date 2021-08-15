@@ -4,11 +4,13 @@ from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCom
     Connector, ReservationContextDetails, ResourceContextDetails
 import driver as mydriver
 from helper_code.quali_api_wrapper import QualiAPISession
-
+from cloudshell.api.cloudshell_api import CloudShellAPISession
+api = CloudShellAPISession(host='192.168.201.100', username='admin', password='admin', domain='Global')
+x=api.GetResourceDetails('NPBI')
 LIVE_SANDBOX_ID = "33b70f5a-ed37-40de-87a0-b2125fa7245b"
 SERVICE_NAME = "Reporting Service"
 
-server = "qs-il-lt-nattik"
+server = "192.168.201.100"
 
 attach_to_cloudshell_as(
     user='admin',

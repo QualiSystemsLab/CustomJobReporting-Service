@@ -17,7 +17,6 @@ from format_html import format_html_template
 from cloudshell.logging.qs_logger import get_qs_logger
 from cloudshell.api.cloudshell_api import CloudShellAPISession
 
-
 EMAIL_TEMPLATE = "JobExecutionEnded.htm"
 
 
@@ -175,10 +174,12 @@ class ReportingServiceDriver(ResourceDriverInterface):
                                           protocol=server_protocol,
                                           sb_data=sb_data)
         # sending mail
+        test_result = job_details["JobResult"]
         job_name = job_details["Name"]
         mail_inputs = [
-            InputNameValue("message_title", "Custom Job Report: '{}', Ended: {}".format(job_name,
-                                                                                        server_date_string)),
+            InputNameValue("message_title", "Job Report: '{}', Ended: {} Result: '{}'".format(job_name,
+                                                                                              server_date_string,
+                                                                                              test_result)),
             InputNameValue("message_body", email_body),
             InputNameValue("recipients", recipients),
             InputNameValue("cc_recipients", cc_recipients)
@@ -192,8 +193,8 @@ class ReportingServiceDriver(ResourceDriverInterface):
         except Exception as e:
             err_msg = "Issue sending mail. Check '{}' SMTP Resource. Error: {}".format(smtp_resource, str(e))
             api.SetResourceLiveStatus(resourceFullName=service_name,
-                                         liveStatusName="Error",
-                                         additionalInfo=err_msg)
+                                      liveStatusName="Error",
+                                      additionalInfo=err_msg)
             raise Exception(err_msg)
 
         reporter.warn_out(mail_response.Output)
@@ -243,10 +244,10 @@ class ReportingServiceDriver(ResourceDriverInterface):
         ]
         try:
             api.ExecuteCommand(reservationId=res_id,
-                                               targetName=smtp_resource,
-                                               targetType="Resource",
-                                               commandName="send_mail",
-                                               commandInputs=mail_inputs)
+                               targetName=smtp_resource,
+                               targetType="Resource",
+                               commandName="send_mail",
+                               commandInputs=mail_inputs)
         except Exception as e:
             err_msg = "Issue sending error report mail: {}".format(str(e))
             reporter.err_out(err_msg)
