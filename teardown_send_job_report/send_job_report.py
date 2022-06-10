@@ -1,11 +1,9 @@
 from cloudshell.workflow.orchestration.sandbox import Sandbox
-from helper_code.sandbox_print_helpers import *
-from helper_code.sandbox_reporter import SandboxReporter
+from cloudshell.helpers.sandbox_reporter.reporter import SandboxReporter
 
-REPORTING_SERVICE = "Reporting Service"
+REPORTING_SERVICE_MODEL = "Reporting Service"
 
 
-# ========== Primary Function ==========
 def send_job_report(sandbox, components=None):
     """
     Functions passed into orchestration flow MUST have (sandbox, components) signature
@@ -17,24 +15,26 @@ def send_job_report(sandbox, components=None):
     res_id = sandbox.id
     logger = sandbox.logger
     reporter = SandboxReporter(api, res_id, logger)
-    reporter.warn_out("starting teardown, sending job report...")
 
+    res_details = api.GetReservationDetails(res_id, True).ReservationDescription
+    services = res_details.Services
+    reporting_service_search = [x for x in services if x.ServiceName == REPORTING_SERVICE_MODEL]
+    if not reporting_service_search:
+        raise ValueError("No reporting service found on canvas")
 
-    # send mail report
+    reporting_service = reporting_service_search[0]
+    reporter.warning("starting teardown, sending job report...")
+
     try:
         api.ExecuteCommand(reservationId=res_id,
-                           targetName=REPORTING_SERVICE,
+                           targetName=reporting_service.Alias,
                            targetType="Service",
                            commandName="send_report_mail")
     except Exception as e:
         msg = "Issue with reporting service: {}".format(str(e))
-        err_print(api, res_id, msg)
-        reporter.err_out(msg)
+        reporter.error(msg)
         api.SetReservationLiveStatus(reservationId=res_id,
                                      liveStatusName="Error",
                                      additionalInfo=msg)
         raise Exception(msg)
-
-    reporter.warn_out("Email Job Report Sent")
-
-
+    reporter.success("Email Job Report Sent")

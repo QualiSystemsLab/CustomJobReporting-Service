@@ -1,12 +1,17 @@
 from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
-from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadResource, \
-    AutoLoadAttribute, AutoLoadDetails, CancellationContext, AutoLoadCommandContext
-# from data_model import *  # run 'shellfoundry generate' to generate data model classes
+from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext, AutoLoadDetails, \
+    CancellationContext, AutoLoadCommandContext
+from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
+
+from data_model import *  # run 'shellfoundry generate' to generate data model classes
 from email_helper import send_email
-import helper_code.shell_api_helpers as shell_api_help
-import helper_code.automation_api_helpers as auto_api_help
-from helper_code.sandbox_print_helpers import *
-from helper_code.common_helpers import get_list_from_comma_separated_string
+
+import automation_api_helpers as auto_api_help
+from common_helpers import get_list_from_comma_separated_string
+
+
+class SMTPServerException(Exception):
+    pass
 
 
 class SmtpServerDriver(ResourceDriverInterface):
@@ -148,37 +153,27 @@ class SmtpServerDriver(ResourceDriverInterface):
         :param str cc_recipients: comma separated list of people to put in cc
         :return:
         """
-        api = shell_api_help.get_api_from_context(context)
-        res_id = context.reservation.reservation_id
-        model = context.resource.model
-        attrs = context.resource.attributes
+        api = CloudShellSessionContext(context).get_api()
+        resource = SmtpServer.create_from_context(context)
+
         resource_name = context.resource.fullname
 
         if not recipients:
-            raise Exception("Recipients list must be populated")
+            raise ValueError("Recipients list must be populated")
 
         smtp_ip = context.resource.address
         smtp_user, smtp_password = auto_api_help.get_resource_credentials(api, context.resource.name)
 
-        # SMTP Port must be integer or string
-        smtp_port = int(attrs["{}.SMTP Port".format(model)])
-
-        # SSL
-        ssl_enabled_str = attrs["{}.SSL Enabled".format(model)]
-        ssl_enabled = True if ssl_enabled_str == "True" else False
-
-        # Proxy Info
-        proxy_enabled_str = attrs["{}.Proxy Enabled".format(model)]
-        proxy_enabled = True if proxy_enabled_str == "True" else False
-        proxy_host = attrs["{}.Proxy Host".format(model)]
-        proxy_port = int(attrs["{}.Proxy Port".format(model)])
-
-        # auth enabled
-        smtp_auth_enabled_str = attrs["{}.SMTP Auth Enabled".format(model)]
-        smtp_auth_boolean = True if smtp_auth_enabled_str == "True" else False
+        smtp_port = int(resource.smtp_port)
+        ssl_enabled = True if resource.ssl_enabled == "True" else False
+        proxy_enabled = True if resource.proxy_enabled == "True" else False
+        proxy_host = resource.proxy_host
+        proxy_port = int(resource.proxy_port)
+        is_smtp_auth = True if resource.smtp_auth_enabled == "True" else False
 
         recipients_list = get_list_from_comma_separated_string(recipients)
         cc_list = get_list_from_comma_separated_string(cc_recipients)
+
         try:
             send_email(smtp_user=smtp_user,
                        smtp_pass=smtp_password,
@@ -191,19 +186,19 @@ class SmtpServerDriver(ResourceDriverInterface):
                        proxy_enabled=proxy_enabled,
                        proxy_host=proxy_host,
                        proxy_port=proxy_port,
-                       smtp_auth_enabled=smtp_auth_boolean,
+                       smtp_auth_enabled=is_smtp_auth,
                        ssl_enabled=ssl_enabled)
         except Exception as e:
+            err_msg = f"Issue sending mail. Error: {str(e)}"
             api.SetResourceLiveStatus(resourceFullName=resource_name,
                                       liveStatusName="Error",
-                                      additionalInfo="Issue sending mail. Error: {}".format(str(e)))
-            raise
-        else:
-            api.SetResourceLiveStatus(resourceFullName=resource_name,
-                                      liveStatusName="Online",
-                                      additionalInfo="SMTP server online. Last mail sent to '{}'".format(recipients))
-            succes_msg = "mail sent to '{}'".format(",".join(recipients_list))
-            return succes_msg
+                                      additionalInfo=err_msg)
+            raise SMTPServerException(err_msg)
+        api.SetResourceLiveStatus(resourceFullName=resource_name,
+                                  liveStatusName="Online",
+                                  additionalInfo="SMTP server online. Last mail sent to '{}'".format(recipients))
+        comma_separated_recipients = ",".join(recipients_list)
+        return f"mail sent to '{comma_separated_recipients}'"
 
     def send_test_mail(self, context):
         """
@@ -211,12 +206,10 @@ class SmtpServerDriver(ResourceDriverInterface):
         :param ResourceCommandContext context:
         :return:
         """
-        api = shell_api_help.get_api_from_context(context)
-        model = context.resource.model
-        attrs = context.resource.attributes
+        resource = SmtpServer.create_from_context(context)
         resource_name = context.resource.fullname
 
-        smtp_user = attrs["{}.User".format(model)]
+        smtp_user = resource.user
 
         msg_body = "<h2>This is a test mail from Cloudshell SMTP Resource '{}'</h2>".format(resource_name)
         self.send_mail(context=context,

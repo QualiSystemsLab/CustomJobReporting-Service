@@ -1,1 +1,21 @@
-<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.ReportingServiceDriver" Name="ReportingServiceDriver" Version="1.0.0"/>
+<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.ReportingServiceDriver"
+        Name="ReportingServiceDriver"
+        Version="1.0.0" PythonVersion="3">
+    <Layout>
+        <Category Name="Sandbox Data">
+            <Command Description="Add sandbox data from test" DisplayName="Set Test Data"
+                     Name="set_test_data">
+                <Parameters>
+                    <Parameter Description="Test execution id"
+                               DisplayName="Test ID" Mandatory="True" Name="test_id" Type="String"/>
+                    <Parameter Description="Body of test data message"
+                               DisplayName="Test Data" Mandatory="True" Name="test_data" Type="String"/>
+                </Parameters>
+            </Command>
+        </Category>
+        <Category Name="Report Mail">
+            <Command Description="Send Custom Mail Report" DisplayName="Send Report Mail" Name="send_report_mail">
+            </Command>
+        </Category>
+    </Layout>
+</Driver>

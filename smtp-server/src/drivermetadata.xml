@@ -1,5 +1,5 @@
 <Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.SmtpServerDriver"
-        Name="SmtpServerDriver" Version="1.0.0">
+        Name="SmtpServerDriver" Version="1.0.0" PythonVersion="3">
     <Layout>
         <Category Name="Hidden Commands">
             <Command Description="" DisplayName="Orchestration Save" Name="orchestration_save"/>
