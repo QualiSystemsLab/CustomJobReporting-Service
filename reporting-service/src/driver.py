@@ -76,10 +76,18 @@ class ReportingServiceDriver(ResourceDriverInterface):
         admin_token = context.connectivity.admin_auth_token
         sb_owner_mail = context.reservation.owner_email
 
+        if not sb_owner_mail and not additional_recipients:
+            raise ValueError("No sandbox owner mail or additional recipients configured")
+
+        recipients = ""
+        if sb_owner_mail:
+            recipients += sb_owner_mail
+
         if additional_recipients:
-            recipients = sb_owner_mail + "," + additional_recipients
-        else:
-            recipients = sb_owner_mail
+            if recipients:
+                recipients += f", {additional_recipients}"
+            else:
+                recipients = additional_recipients
 
         current_job_id = resource.current_job_id
         cs_https = resource.cs_https
